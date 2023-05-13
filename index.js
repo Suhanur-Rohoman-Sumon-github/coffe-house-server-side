@@ -7,7 +7,7 @@ const port = 5000
 
 app.use(cors())
 app.use(express.json())
-const uri = "mongodb+srv://coffiehouse:iBdxlFLJvLdqxM48@cluster0.eepi0pq.mongodb.net/?retryWrites=true&w=majority";
+const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.eepi0pq.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -35,7 +35,6 @@ async function run() {
 
         app.get('/coffie/:id',async(req,res)=>{
             const id = req.params.id
-            console.log(id)
             const query = {_id: new ObjectId(id)}
             const result = await servises.findOne(query);
             res.send(result)
@@ -50,6 +49,24 @@ async function run() {
         app.post('/coffie', async (req, res) => {
             const newProducts = req.body
             const result = await servises.insertOne(newProducts);
+            res.send(result)
+        })
+
+        app.put('/updateCoffie/:id',async(req,res)=>{
+            const id = req.params.id
+            const filter = {_id: new ObjectId(id)}
+            const option = {upsert:true}
+            const updatedCoffee = req.body
+            const coffee = {
+                $set:{
+                    chef:updatedCoffee.chef,
+                    supplier:updatedCoffee.supplier,
+                    category:updatedCoffee.category,
+                    imgUrl:updatedCoffee.imgUrl
+                }
+                
+            }
+            const result = await servises.updateOne(filter,coffee, option)
             res.send(result)
         })
 
