@@ -6,7 +6,7 @@ const app = express()
 const port = 5000
 
 app.use(cors())
-
+app.use(express.json())
 const uri = "mongodb+srv://coffiehouse:iBdxlFLJvLdqxM48@cluster0.eepi0pq.mongodb.net/?retryWrites=true&w=majority";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -22,6 +22,30 @@ async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
+
+        const serviseData = client.db("servisedb");
+        const servises = serviseData.collection("servise");
+        const coffieHouse = client.db("coffieHouse")
+        const newcoffie = coffieHouse.collection("our servises")
+        app.get('/servises',async(req,res)=>{
+            const coursor =  newcoffie.find()
+            const result = await coursor.toArray()
+            res.send(result)
+        })
+
+        app.get('/coffie',async(req,res)=>{
+            const coursor =servises.find()
+            const result = await coursor.toArray()
+            res.send(result)
+        })
+
+        app.post('/coffie', async (req, res) => {
+            const newProducts = req.body
+            console.log(newProducts)
+            const result = await servises.insertOne(newProducts);
+            res.send(result)
+        })
+
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
@@ -32,11 +56,11 @@ async function run() {
 }
 run().catch(console.dir);
 
-app.get('/',(req,res)=>{
+app.get('/', (req, res) => {
     res.send('vai kaj running coltese pera nio na')
 })
 
-app.listen(port,()=>{
+app.listen(port, () => {
     console.log(`coffie is running in port ${port}`)
 })
 
